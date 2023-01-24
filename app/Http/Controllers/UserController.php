@@ -7,13 +7,14 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 
 class UserController extends Controller
 {
     public function __construct()
     {
-        $this->middleware("auth:web")->except("login", "register", "restore");
+        $this->middleware("auth:api")->except("login", "register", "restore");
     }
 
     public function login(Request $request)
@@ -30,9 +31,9 @@ class UserController extends Controller
             ], 400);
         }
 
-        if (!User::where('email', $request->email)->exists()) {
+        if (!User::query()->where('email', $request->email)->exists()) {
             return response([
-                'message' => 'Email not found',
+                'message' => 'Email not found.',
             ], 404);
         }
 
@@ -40,14 +41,14 @@ class UserController extends Controller
 
         if (!$token) {
             return response([
-                "message" => "Invalid credentials",
+                "message" => "Invalid credentials.",
             ], 401);
         }
 
         $user = Auth::user();
 
         return response([
-            "message" => "Successfully logged in",
+            "message" => "Successfully logged in.",
             "user" => $user,
             "token" => $token,
         ]);
@@ -59,6 +60,7 @@ class UserController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
             'password' => 'required|string',
+            "avatar" => "image|mimes:jpg,png,bmp,jpeg",
         ]);
 
         if ($validation->fails()) {
@@ -68,17 +70,26 @@ class UserController extends Controller
             ], 400);
         }
 
-        if (User::where('email', $request->email)->exists()) {
+        if (User::query()->where('email', $request->email)->exists()) {
             return response([
                 'message' => 'Email already exists',
             ], 409);
         }
 
-        $user = User::create([
+        $avatarUrl = null;
+
+        if ($request->hasFile("avatar")) {
+            $disk = Storage::disk();
+            $file = $request->file("avatar");
+            $s3Path = 'avatars/' . time() . "." . $file->getClientOriginalExtension();
+            $avatarUrl = $disk->url($disk->put($s3Path, file_get_contents($file)));
+        }
+
+        $user = User::query()->create([
             'name' => $request->name,
-            "username" => $request->username,
             'email' => $request->email,
             'password' => Hash::make($request->password),
+            "avatar_url" => $avatarUrl,
         ]);
 
         $token = Auth::login($user);
@@ -101,6 +112,7 @@ class UserController extends Controller
     public function me()
     {
         return response([
+            "message" => "Returning current user",
             "user" => Auth::user(),
         ]);
     }
