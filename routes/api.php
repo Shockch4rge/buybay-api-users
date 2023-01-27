@@ -25,3 +25,5 @@ Route::prefix("auth")->group(function () {
     Route::put("reset-password", [UserController::class, "resetPassword"]);
     Route::put("restore", [UserController::class, "restore"]);
 });
+
+Route::apiResource("users", UserController::class)->only("show");

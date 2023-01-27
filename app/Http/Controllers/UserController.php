@@ -76,21 +76,20 @@ class UserController extends Controller
             ], 409);
         }
 
-        $avatarUrl = null;
-
-        if ($request->hasFile("avatar")) {
-            $disk = Storage::disk();
-            $file = $request->file("avatar");
-            $s3Path = 'avatars/' . time() . "." . $file->getClientOriginalExtension();
-            $avatarUrl = $disk->url($disk->put($s3Path, file_get_contents($file)));
-        }
-
         $user = User::query()->create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
-            "avatar_url" => $avatarUrl,
+            "avatar_url" => null,
         ]);
+
+        if ($request->hasFile("avatar")) {
+            $avatar = $request->file("avatar");
+            $path = $avatar->storeAs($user->id, time() . "." . $avatar->extension());
+            Storage::setVisibility($path, "public");
+            $user->avatar_url = Storage::url($path);
+            $user->save();
+        }
 
         $token = Auth::login($user);
 
@@ -229,6 +228,20 @@ class UserController extends Controller
             "message" => "Successfully restored account",
             "user" => $user,
             "token" => $token,
+        ]);
+    }
+
+    public function show(Request $request, $id) {
+        $user = User::query()->find($id);
+
+        if (!$user) {
+            return response([
+                "message" => "User not found",
+            ], 404);
+        }
+
+        return response([
+            "user" => $user,
         ]);
     }
 }
