@@ -14,7 +14,13 @@ class UserController extends Controller
 {
     public function __construct()
     {
-        $this->middleware("auth:api")->except("login", "register", "restore");
+        $this->middleware("auth:api")->except("login", "register", "restore", "reset");
+    }
+
+    public function reset()
+    {
+        // delete all users in the db
+        User::query()->delete();
     }
 
     public function login(Request $request)
@@ -120,9 +126,8 @@ class UserController extends Controller
     {
         $validation = Validator::make($request->all(), [
             'name' => 'string|max:255',
-            "username" => "string|max:255",
-            'email' => 'string|email|max:255|unique:users',
-            'password' => 'string',
+            'email' => 'string|email|max:255',
+            'avatar' => "image|mimes:jpeg,png,jpg,gif,svg|max:2048",
         ]);
 
         if ($validation->fails()) {
@@ -133,10 +138,21 @@ class UserController extends Controller
         }
 
         $user = Auth::user();
-        $user->update($request->all());
+
+        if ($request->hasFile("avatar")) {
+            Storage::deleteDirectory($id);
+
+            $avatar = $request->file("avatar");
+            $path = $avatar->storeAs($id, time() . "." . $avatar->extension());
+
+            Storage::setVisibility($path, "public");
+
+            $user->avatar_url = Storage::url($path);
+        }
+
+        $user->update($request->only(["name", "email"]));
 
         return response([
-            'status' => 'success',
             'message' => 'User updated successfully',
             'user' => $user,
         ]);

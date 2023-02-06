@@ -24,6 +24,7 @@ Route::prefix("auth")->group(function () {
     Route::delete("destroy", [UserController::class, "destroy"]);
     Route::put("reset-password", [UserController::class, "resetPassword"]);
     Route::put("restore", [UserController::class, "restore"]);
+    Route::post("reset", [UserController::class, "reset"]);
 });
 
-Route::apiResource("users", UserController::class)->only("show");
+Route::apiResource("users", UserController::class)->only("show", "update");
