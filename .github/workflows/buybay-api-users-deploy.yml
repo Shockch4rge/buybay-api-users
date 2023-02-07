@@ -33,5 +33,5 @@ jobs:
             echo "AWS_BUCKET=${{ secrets.AWS_BUCKET }}" >> .env
             echo "FILESYSTEM_DISK=${{ secrets.FILESYSTEM_DISK }}" >> .env
             echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> .env
-            ./vendor/bin/sail -f docker-compose.prod.yml up -d --build buybay-api-users
             echo "Deployed buybay-api-users"
+#            ./vendor/bin/sail -f docker-compose.prod.yml up -d --build buybay-api-users
