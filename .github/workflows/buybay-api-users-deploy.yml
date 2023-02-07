@@ -38,4 +38,4 @@ jobs:
             echo "FILESYSTEM_DISK=${{ secrets.FILESYSTEM_DISK }}" >> .env
             echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> .env
             echo "Deployed buybay-api-users"
-#            ./vendor/bin/sail -f docker-compose.prod.yml up -d --build
+            ./vendor/bin/sail up -d
