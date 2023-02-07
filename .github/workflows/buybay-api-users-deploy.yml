@@ -6,6 +6,7 @@ on:
       - main
     paths:
       - ./**
+      - '.github/workflows/buybay-api-users-deploy.yml'
 
 jobs:
   deploy:
