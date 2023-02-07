@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu/latest
     steps:
       - name: SSH into EC2
-      - uses: appleboy/ssh-action@master
+        uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.HOST_ADDRESS }}
           username: ${{ secrets.HOST_USERNAME }}
