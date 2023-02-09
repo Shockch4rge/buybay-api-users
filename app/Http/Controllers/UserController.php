@@ -21,6 +21,11 @@ class UserController extends Controller
     {
         // delete all users in the db
         User::query()->delete();
+        User::query()->create([
+            "name" => "John",
+            "email" => "john@gmail.com",
+            "password" => Hash::make("password123"),
+        ]);
     }
 
     public function login(Request $request)
@@ -35,12 +40,6 @@ class UserController extends Controller
                 "message" => "Invalid credentials",
                 "errors" => $validation->errors(),
             ], 400);
-        }
-
-        if (!User::query()->where('email', $request->email)->exists()) {
-            return response([
-                'message' => 'Email not found.',
-            ], 404);
         }
 
         $token = Auth::attempt($request->all());
@@ -206,7 +205,6 @@ class UserController extends Controller
         }
 
         $user->delete();
-        UserDeletedJob::dispatch($user);
         Auth::logout();
 
         return response([
